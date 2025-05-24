@@ -1,8 +1,15 @@
+import os
+
+# Redirect Streamlit’s home to a writable temp directory
+os.environ["STREAMLIT_HOME"] = "/tmp/.streamlit"
+os.makedirs("/tmp/.streamlit", exist_ok=True)
+
+# Disable usage‐stats writing
 import streamlit as st
+st.set_option("browser.gatherUsageStats", False)
 import pandas as pd
 import plotly.express as px
 import json
-import requests
 
 st.set_page_config(
     page_title="California UOI Dashboard",
@@ -32,10 +39,9 @@ st.title("California Urban Opportunity Index (UOI) by County")
 # Load up the main CSV for California
 df = pd.read_csv("california_counties_full.csv")
 
-# Fetch the official FIPS-based US counties GeoJSON and filter to California (prefix "06")
-counties = requests.get(
-    "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
-).json()
+# Load the FIPS-based US counties GeoJSON locally and filter to California (prefix "06")
+with open("geojson-counties-fips.json") as f:
+    counties = json.load(f)
 counties["features"] = [
     feat for feat in counties["features"]
     if feat.get("id", "").startswith("06")
